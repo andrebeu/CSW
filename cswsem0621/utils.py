@@ -98,6 +98,8 @@ class SEM():
         # print(pr_xtp1)
         return pr_xtp1
 
+
+
     def run_exp(self,exp):
         """ exp is L of trialL
         trialL is L of obs (ints) 
@@ -114,6 +116,8 @@ class SEM():
         ## 
         schtm = self.schlib[0] # sch0 is active to start
         for tridx,trialL in enumerate(exp):
+            if len(self.schlib)>=100:
+                return data
             data['priors'].append([sch.get_prior(betabt=False) for sch in self.schlib])
             data['likesL2'].append([sch.get_like(trialL[2],trialL[3]) for sch in self.schlib])
             data['postL2'].append([self.calc_posteriors(trialL[2],trialL[3])])
