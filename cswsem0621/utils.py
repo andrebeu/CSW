@@ -1,29 +1,37 @@
 import numpy as np
 
-NSTATES = 10
+NSTATES = 9
 
 
 class SchemaTabularBayes():
     """ CRP prior
     tabluar predictive distirbution
     """
-    def __init__(self,concentration,stickiness,sparsity):
+
+    def __init__(self,concentration,stickiness_wi,stickiness_bt,sparsity):
         self.Tmat = np.zeros([NSTATES,NSTATES])
         self.alfa = concentration
-        self.beta = stickiness
+        self.beta_wi = stickiness_wi
+        self.beta_bt = stickiness_bt
         self.lmbda = sparsity
         self.ntimes_sampled = 0
         self.active = 0 # 1 if active on previous step
 
-    def get_prior(self):
+    def get_prior(self,betabt):
+        """ beta bt controls whether using beta_between or _within
+        """
         if self.ntimes_sampled == 0:
             return self.alfa
-        crp = self.ntimes_sampled + self.beta*self.active
+        if betabt:
+            crp = self.ntimes_sampled + self.beta_bt*self.active
+        else:
+            crp = self.ntimes_sampled + self.beta_wi*self.active
         return crp
 
     def get_like(self,xtm1,xt):
+        PARAM_S = 2
         num = self.lmbda + self.Tmat[xtm1,xt]
-        den = (NSTATES*self.lmbda) + self.Tmat[xtm1,:].sum()
+        den = (PARAM_S*self.lmbda) + self.Tmat[xtm1,:].sum()
         like = num/den
         return like
 
@@ -39,9 +47,16 @@ class SchemaTabularBayes():
             self.active = 0
         return None
 
+    def predict(self,xtm1):
+        """ returns un-normalized count """
+        xthat = np.array([
+            self.get_like(xtm1,x) for x in range(NSTATES)
+            ])
+        return xthat
 
 
 class SEM():
+
     def __init__(self,schargs):
         self.SchClass = SchemaTabularBayes
         self.schargs = schargs
@@ -56,18 +71,18 @@ class SEM():
         sch1 = self.SchClass(**self.schargs)
         self.schlib = [sch0,sch1]
 
-    def calc_posteriors(self,xtm1,xt):
+    def calc_posteriors(self,xtm1,xt,betabt=False):
         """ loop over schema library
         """
-        priors = [sch.get_prior() for sch in self.schlib]
+        priors = [sch.get_prior(betabt) for sch in self.schlib]
         likes = [sch.get_like(xtm1,xt) for sch in self.schlib]
         posteriors = [p*l for p,l in zip(priors,likes)]
         return posteriors
 
-    def select_sch(self,xtm1,xt):
+    def select_sch(self,xtm1,xt,betabt):
         """ xt and xtm1 are ints
         """
-        posteriors = self.calc_posteriors(xtm1,xt)
+        posteriors = self.calc_posteriors(xtm1,xt,betabt=betabt)
         active_k = np.argmax(posteriors)
         if active_k == len(self.schlib)-1:
             self.schlib.append(self.SchClass(**self.schargs))
@@ -79,7 +94,8 @@ class SEM():
         pr_xt_z = np.array([
             self.calc_posteriors(xtm1,x) for x in range(NSTATES)
             ]) # probability of each next state under each schema
-        pr_xtp1 = np.sum(pr_xt_z,axis=1) # sum over schemas
+        pr_xtp1 = np.mean(pr_xt_z,axis=1) # sum over schemas
+        # print(pr_xtp1)
         return pr_xtp1
 
     def run_exp(self,exp):
@@ -98,14 +114,17 @@ class SEM():
         ## 
         schtm = self.schlib[0] # sch0 is active to start
         for tridx,trialL in enumerate(exp):
-            data['priors'].append([sch.get_prior() for sch in self.schlib])
+            data['priors'].append([sch.get_prior(betabt=False) for sch in self.schlib])
             data['likesL2'].append([sch.get_like(trialL[2],trialL[3]) for sch in self.schlib])
             data['postL2'].append([self.calc_posteriors(trialL[2],trialL[3])])
             for tstep,(xtm,xt) in enumerate(zip(trialL[:-1],trialL[1:])):
-                xth = self.predict(xtm)
+                # prediction: marginilize over schemas
+                # xth = self.predict(xtm)
                 # update infered active schema
-                zt = self.select_sch(xtm,xt)
+                zt = self.select_sch(xtm,xt,betabt=tstep==0)
                 scht = self.schlib[zt]
+                # prediction: only active schema
+                xth = scht.predict(xtm)
                 # update transition matrix
                 scht.update(xtm,xt)
                 # update schema history
@@ -115,9 +134,6 @@ class SEM():
                 data['xth'][tridx][tstep] = xth
                 data['zt'][tridx][tstep] = zt       
         return data
-
-
-
 
 
 
@@ -196,9 +212,6 @@ class SchemaDeltaLearner():
 
 
 
-
-
-
 class Task():
     """ 
     """
@@ -218,27 +231,23 @@ class Task():
         begin -> locB -> node11, node 22, node 31, end
         begin -> locB -> node12, node 21, node 32, end
         """
-        begin = 0
-        locA,locB = 1,2
-        node11,node12 = 3,4
-        node21,node22 = 5,6
-        node31,node32 = 7,8
+        begin = 0 # E0
+        locA,locB = 1,2 # E1
+        node11,node12 = 3,4 # E2 
+        node21,node22 = 5,6 # E3
+        node31,node32 = 7,8 # E4
         end = 9
         A1 = np.array([begin,locA,
-            node11,node21,node31,
-            end
+            node11,node21,node31
             ])
         A2 = np.array([begin,locA,
-            node12,node22,node32,
-            end
+            node12,node22,node32
             ])
         B1 = np.array([begin,locB,
-            node11,node22,node31,
-            end
+            node11,node22,node31
             ])
         B2 = np.array([begin,locB,
-            node12,node21,node32,
-            end
+            node12,node21,node32
             ])
         return A1,A2,B1,B2
 
