@@ -114,7 +114,7 @@ class SEM():
             'postL2':[],
         }
         ## 
-        schtm = self.schlib[0] # sch0 is active to start
+        scht = schtm = self.schlib[0] # sch0 is active to start
         for tridx,trialL in enumerate(exp):
             if len(self.schlib)>=100:
                 return data
@@ -122,13 +122,13 @@ class SEM():
             data['likesL2'].append([sch.get_like(trialL[2],trialL[3]) for sch in self.schlib])
             data['postL2'].append([self.calc_posteriors(trialL[2],trialL[3])])
             for tstep,(xtm,xt) in enumerate(zip(trialL[:-1],trialL[1:])):
-                # prediction: marginilize over schemas
+                ## prediction: marginilize over schemas
                 # xth = self.predict(xtm)
+                ## prediction: only active schema
+                xth = scht.predict(xtm)
                 # update infered active schema
                 zt = self.select_sch(xtm,xt,betabt=tstep==0)
                 scht = self.schlib[zt]
-                # prediction: only active schema
-                xth = scht.predict(xtm)
                 # update transition matrix
                 scht.update(xtm,xt)
                 # update schema history
