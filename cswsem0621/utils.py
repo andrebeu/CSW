@@ -8,11 +8,12 @@ class SchemaTabularBayes():
     tabluar predictive distirbution
     """
 
-    def __init__(self,concentration,stickiness_wi,stickiness_bt,sparsity):
+    def __init__(self,concentration,stickiness_wi,stickiness_bt,sparsity,lrate=1,pvar=0):
         self.Tmat = np.zeros([NSTATES,NSTATES])
         self.alfa = concentration
         self.beta_wi = stickiness_wi
-        self.beta_bt = stickiness_bt
+        self.beta_bt = stickiness_bt - np.abs(pvar*np.random.randn(1)[0])
+        self.lrate = lrate
         self.lmbda = sparsity
         self.ntimes_sampled = 0
         self.active = 0 # 1 if active on previous step
@@ -36,7 +37,7 @@ class SchemaTabularBayes():
         return like
 
     def update(self,xtm1,xt):
-        self.Tmat[xtm1,xt]+=1
+        self.Tmat[xtm1,xt]+=self.lrate
         return None
 
     def activate(self,flip):
@@ -70,12 +71,17 @@ class SEM():
         sch0 = self.SchClass(**self.schargs)
         sch1 = self.SchClass(**self.schargs)
         self.schlib = [sch0,sch1]
+        return None
 
-    def calc_posteriors(self,xtm1,xt,betabt=False):
+    def calc_posteriors(self,xtm1,xt,betabt=False,active_only=False):
         """ loop over schema library
         """
-        priors = [sch.get_prior(betabt) for sch in self.schlib]
-        likes = [sch.get_like(xtm1,xt) for sch in self.schlib]
+        if active_only: # prediction
+            priors = [sch.get_prior(betabt) for sch in self.schlib if sch.ntimes_sampled>0]
+            likes = [sch.get_like(xtm1,xt) for sch in self.schlib if sch.ntimes_sampled>0]
+        else: # sch inference
+            priors = [sch.get_prior(betabt) for sch in self.schlib]
+            likes = [sch.get_like(xtm1,xt) for sch in self.schlib]
         posteriors = [p*l for p,l in zip(priors,likes)]
         return posteriors
 
@@ -92,13 +98,11 @@ class SEM():
         """ 
         """
         pr_xt_z = np.array([
-            self.calc_posteriors(xtm1,x) for x in range(NSTATES)
+            self.calc_posteriors(xtm1,x,active_only=True) for x in range(NSTATES)
             ]) # probability of each next state under each schema
         pr_xtp1 = np.mean(pr_xt_z,axis=1) # sum over schemas
         # print(pr_xtp1)
         return pr_xtp1
-
-
 
     def run_exp(self,exp):
         """ exp is L of trialL
@@ -115,6 +119,7 @@ class SEM():
         }
         ## 
         scht = schtm = self.schlib[0] # sch0 is active to start
+        scht.activate(1)
         for tridx,trialL in enumerate(exp):
             if len(self.schlib)>=100:
                 return data
@@ -123,9 +128,9 @@ class SEM():
             data['postL2'].append([self.calc_posteriors(trialL[2],trialL[3])])
             for tstep,(xtm,xt) in enumerate(zip(trialL[:-1],trialL[1:])):
                 ## prediction: marginilize over schemas
-                # xth = self.predict(xtm)
+                xth = self.predict(xtm)
                 ## prediction: only active schema
-                xth = scht.predict(xtm)
+                # xth = scht.predict(xtm)
                 # update infered active schema
                 zt = self.select_sch(xtm,xt,betabt=tstep==0)
                 scht = self.schlib[zt]
