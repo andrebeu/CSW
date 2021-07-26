@@ -8,12 +8,13 @@ class SchemaTabularBayes():
     tabluar predictive distirbution
     """
 
-    def __init__(self,concentration,stickiness_wi,stickiness_bt,sparsity,lrate=1,pvar=0):
+    def __init__(self,concentration,stickiness_wi,stickiness_bt,sparsity,lrate=1,lratep=1,pvar=0):
         self.Tmat = np.zeros([NSTATES,NSTATES])
         self.alfa = concentration
         self.beta_wi = stickiness_wi
         self.beta_bt = stickiness_bt - np.abs(pvar*np.random.randn(1)[0])
-        self.lrate = lrate
+        self.lrate = lrate # lrate like
+        self.lratep = lratep # lrate prior
         self.lmbda = sparsity
         self.ntimes_sampled = 0
         self.active = 0 # 1 if active on previous step
@@ -24,9 +25,9 @@ class SchemaTabularBayes():
         if self.ntimes_sampled == 0:
             return self.alfa
         if betabt:
-            crp = self.ntimes_sampled + self.beta_bt*self.active
+            crp = self.lratep*self.ntimes_sampled + self.beta_bt*self.active
         else:
-            crp = self.ntimes_sampled + self.beta_wi*self.active
+            crp = self.lratep*self.ntimes_sampled + self.beta_wi*self.active
         return crp
 
     def get_like(self,xtm1,xt):
