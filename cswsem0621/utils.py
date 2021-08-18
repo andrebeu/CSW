@@ -58,6 +58,18 @@ def unpack_acc(cbatch_data):
         accL.append(acc.mean(1)) # mean over layers
     return np.array(accL)
 
+def unpack_data(cbatch_data,dtype='priors'):
+    """ unpacks batch data from multiple curr and seeds
+    dtype: priors,likes,post
+    """
+    L = []
+    for cidx in range(len(cbatch_data)):
+        L.append([])
+        for sbatch_data in cbatch_data[cidx]:
+            mask = np.all(sbatch_data[dtype]!=-1,0)[0]
+            L[cidx].append(sbatch_data[dtype][:,:,mask])
+    return L
+
 
 ### RUN EXP
 def run_batch_exp(ns,args):
@@ -75,22 +87,9 @@ def run_batch_exp(ns,args):
     dataL.append(data)
   return dataL
 
-# def run_batch_exp_curr(ns,args,currL=['blocked','interleaved']):
-#   """ loop over task conditions, 
-#   return acc [task_condition,seed,trial]
-#   """
-#   L = []
-#   for curr in currL:
-#     args['exp']['condition'] = curr
-#     ## extract other data here
-#     dataL = run_batch_exp(ns,args)
-#     ##
-#     acc = np.array([get_acc(data) for data in dataL]).mean(1) # mean over layer
-#     L.append(acc)
-#   return np.array(L)
 
 
-def run_batch_exp_curr2(ns,args,currL=['blocked','interleaved']):
+def run_batch_exp_curr(ns,args,currL=['blocked','interleaved']):
   """ loop over task conditions, 
   return acc [task_condition,seed,trial]
   """
