@@ -7,9 +7,9 @@
 #SBATCH -o ./slurms/output.%j.%a.out
 
 
-module load pyger/0.9
+# module load pyger/0.9
 conda init bash
-# conda activate sem
+conda activate sem
 
 # get arr idx
 slurm_arr_idx=${SLURM_ARRAY_TASK_ID}
