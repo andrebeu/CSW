@@ -2,13 +2,15 @@ import numpy as np
 
 NSTATES = 9
 MAX_SCH = 21
+BETA2 = False
 
 class SchemaTabularBayes():
     """ CRP prior
     tabluar predictive distirbution
     """
 
-    def __init__(self,concentration,stickiness_wi,stickiness_bt,sparsity,lrate=1,lratep=1,pvar=0):
+    def __init__(self,concentration,stickiness_wi,stickiness_bt,sparsity,
+        lrate=1,lratep=1,pvar=0,schidx=None):
         self.Tmat = np.zeros([NSTATES,NSTATES])
         self.alfa = concentration
         self.beta_wi = stickiness_wi
@@ -17,21 +19,23 @@ class SchemaTabularBayes():
         self.lratep = lratep # lrate prior
         self.lmbda = sparsity
         self.ntimes_sampled = 0
-        self.active = 0 # 1 if active on previous step
+        self.schidx = schidx
 
-    def get_prior(self,betabt):
+    def get_prior(self,beta_mode,ztm,ztrm):
         """ beta bt controls whether using beta_between or _within
         """
         if self.ntimes_sampled == 0:
             return self.alfa
-        if betabt == 2:
-            ### BOTH 
+        ztm_flag = ztm == self.schidx
+        ztrm_flag = ztrm == self.schidx
+        if beta_mode == 0: # beta within
+            crp = self.lratep*self.ntimes_sampled + self.beta_wi* ztm_flag
+        elif beta_mode == 1: # beta between
+            assert ztm == ztrm
+            crp = self.lratep*self.ntimes_sampled + self.beta_bt* ztm_flag
+        elif beta_mode == 2: # combined
             crp = self.lratep*self.ntimes_sampled + \
-                    self.beta_bt*self.activebt + self.beta_wi*self.active
-        elif betabt:
-            crp = self.lratep*self.ntimes_sampled + self.beta_bt*self.active
-        else:
-            crp = self.lratep*self.ntimes_sampled + self.beta_wi*self.active
+                    self.beta_bt*ztrm_flag + self.beta_wi*ztm_flag
         return crp
 
     def get_like(self,xtm1,xt):
@@ -43,14 +47,6 @@ class SchemaTabularBayes():
 
     def update(self,xtm1,xt):
         self.Tmat[xtm1,xt]+=self.lrate
-        return None
-
-    def activate(self,flip):
-        if flip:
-            self.active = 1
-            self.ntimes_sampled += 1
-        else:
-            self.active = 0
         return None
 
     def predict(self,xtm1):
@@ -73,19 +69,31 @@ class SEM():
         initialize with two schemas
         one active one inactive
         """
-        sch0 = self.SchClass(**self.schargs)
-        sch1 = self.SchClass(**self.schargs)
+        sch0 = self.SchClass(**self.schargs,schidx=0)
+        sch1 = self.SchClass(**self.schargs,schidx=1)
         self.schlib = [sch0,sch1]
         return None
 
-    def calc_posteriors(self,xtm1,xt,betabt=False,active_only=False):
+    def get_beta_mode(self):
+        if BETA2: # combined
+            return 2
+        else: # between
+            if self.tstep == 0:
+                return 1
+            else: # within
+                return 0 
+        assert False
+        return None
+
+    def calc_posteriors(self,xtm1,xt,ztm,ztrm,active_only=False):
         """ loop over schema library
         """
+        beta_mode = self.get_beta_mode()
         if active_only: # prediction
-            priors = [sch.get_prior(betabt) for sch in self.schlib if sch.ntimes_sampled>0]
+            priors = [sch.get_prior(beta_mode,ztm,ztrm) for sch in self.schlib if sch.ntimes_sampled>0]
             likes = [sch.get_like(xtm1,xt) for sch in self.schlib if sch.ntimes_sampled>0]
         else: # sch inference
-            priors = [sch.get_prior(betabt) for sch in self.schlib]
+            priors = [sch.get_prior(beta_mode,ztm,ztrm) for sch in self.schlib]
             likes = [sch.get_like(xtm1,xt) for sch in self.schlib]
             # record 
             self.data['priors'][self.tridx,self.tstep,:len(priors)] = priors
@@ -93,21 +101,21 @@ class SEM():
         posteriors = [p*l for p,l in zip(priors,likes)]
         return posteriors
 
-    def select_sch(self,xtm1,xt,betabt):
+    def select_sch(self,xtm1,xt,ztm,ztrm):
         """ xt and xtm1 are ints
         """
-        posteriors = self.calc_posteriors(xtm1,xt,betabt=betabt)
+        posteriors = self.calc_posteriors(xtm1,xt,ztm,ztrm)
         self.data['post'][self.tridx,self.tstep,:len(posteriors)] = posteriors
         active_k = np.argmax(posteriors)
         if active_k == len(self.schlib)-1:
-            self.schlib.append(self.SchClass(**self.schargs))
+            self.schlib.append(self.SchClass(**self.schargs,schidx=len(self.schlib)))
         return active_k
 
-    def predict(self,xtm1):
+    def predict(self,xtm1,ztm,ztrm):
         """ 
         """
         pr_xt_z = np.array([
-            self.calc_posteriors(xtm1,x,active_only=True) for x in range(NSTATES)
+            self.calc_posteriors(xtm1,x,ztm,ztrm,active_only=True) for x in range(NSTATES)
             ]) # probability of each next state under each schema
         pr_xtp1 = np.mean(pr_xt_z,axis=1) # sum over schemas
         # print(pr_xtp1)
@@ -127,33 +135,31 @@ class SEM():
             'post':-np.ones([len(exp),len(exp[0]),MAX_SCH]),
         }
         ## 
-        scht = schtm = self.schlib[0] # sch0 is active to start
-        scht.activate(1)
+        scht = schtm = schtrm = self.schlib[0] # sch0 is active to start
+        scht.ntimes_sampled += 1
         for tridx,trialL in enumerate(exp):
             self.tridx = tridx
-            if len(self.schlib)>=MAX_SCH:
-                return data
             for tstep,(xtm,xt) in enumerate(zip(trialL[:-1],trialL[1:])):
+                if len(self.schlib)>=MAX_SCH:
+                    return data
                 # print('ts',tstep)
                 self.tstep = tstep
                 ## prediction: marginilize over schemas
-                xth = self.predict(xtm)
+                xth = self.predict(xtm,schtm.schidx,schtrm.schidx)
                 ## prediction: only active schema
                 # xth = scht.predict(xtm)
                 # update infered active schema
-                zt = self.select_sch(xtm,xt,betabt=tstep==0)
+                zt = self.select_sch(xtm,xt,schtm.schidx,schtrm.schidx)
                 scht = self.schlib[zt]
                 # update transition matrix
                 scht.update(xtm,xt)
+                scht.ntimes_sampled += 1
                 # update schema history
-                schtm.activate(0)
-                scht.activate(1)
                 schtm = scht
                 data['xth'][tridx][tstep] = xth
                 data['zt'][tridx][tstep] = zt       
-            ##
-            zt_end = zt ## need to init
-            ##
+            # final schema of trial
+            schtrm = scht 
         return data
 
 
