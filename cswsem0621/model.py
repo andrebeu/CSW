@@ -1,7 +1,7 @@
 import numpy as np
 
 NSTATES = 9
-MAX_SCH = 21
+MAX_SCH = 200
 BETA2 = False
 
 class SchemaTabularBayes():
@@ -10,7 +10,7 @@ class SchemaTabularBayes():
     """
 
     def __init__(self,concentration,stickiness_wi,stickiness_bt,sparsity,
-        lrate=1,lratep=1,pvar=0,schidx=None):
+        lrate=1,lratep=1,pvar=0,decay_rate=1,schidx=None):
         self.Tmat = np.zeros([NSTATES,NSTATES])
         self.alfa = concentration
         self.beta_wi = stickiness_wi
@@ -20,22 +20,25 @@ class SchemaTabularBayes():
         self.lmbda = sparsity
         self.ntimes_sampled = 0
         self.schidx = schidx
+        self.decay_rate = decay_rate
 
-    def get_prior(self,beta_mode,ztm,ztrm):
-        """ beta bt controls whether using beta_between or _within
+    def get_prior(self,beta_mode,ztm1,ztrm1):
+        """ beta_mode controls whether to combine betas or use separate
+        ztm1 : z of tstep t minus 1
+        ztrm1 : z of trial t minus 1
         """
         if self.ntimes_sampled == 0:
             return self.alfa
-        ztm_flag = ztm == self.schidx
-        ztrm_flag = ztrm == self.schidx
+        ztm1_flag = ztm1 == self.schidx
+        ztrm1_flag = ztrm1 == self.schidx
         if beta_mode == 0: # beta within
-            crp = self.lratep*self.ntimes_sampled + self.beta_wi* ztm_flag
+            crp = self.lratep*self.ntimes_sampled + self.beta_wi* ztm1_flag
         elif beta_mode == 1: # beta between
-            assert ztm == ztrm
-            crp = self.lratep*self.ntimes_sampled + self.beta_bt* ztm_flag
+            assert ztm1 == ztrm1
+            crp = self.lratep*self.ntimes_sampled + self.beta_bt* ztm1_flag
         elif beta_mode == 2: # combined
             crp = self.lratep*self.ntimes_sampled + \
-                    self.beta_bt*ztrm_flag + self.beta_wi*ztm_flag
+                    self.beta_bt*ztrm1_flag + self.beta_wi*ztm1_flag
         return crp
 
     def get_like(self,xtm1,xt):
@@ -47,6 +50,10 @@ class SchemaTabularBayes():
 
     def update(self,xtm1,xt):
         self.Tmat[xtm1,xt]+=self.lrate
+        return None
+
+    def decay(self):
+        self.Tmat = self.Tmat*self.decay_rate
         return None
 
     def predict(self,xtm1):
@@ -62,6 +69,7 @@ class SEM():
     def __init__(self,schargs):
         self.SchClass = SchemaTabularBayes
         self.schargs = schargs
+        self.beta2_flag = BETA2
         self.init_schlib()
 
     def init_schlib(self):
@@ -74,8 +82,13 @@ class SEM():
         self.schlib = [sch0,sch1]
         return None
 
+    def decay_allsch(self):
+        for sch in self.schlib:
+            sch.decay()
+        return None
+
     def get_beta_mode(self):
-        if BETA2: # combined
+        if self.beta2_flag: # combined
             return 2
         else: # between
             if self.tstep == 0:
@@ -151,6 +164,8 @@ class SEM():
                 # update infered active schema
                 zt = self.select_sch(xtm,xt,schtm.schidx,schtrm.schidx)
                 scht = self.schlib[zt]
+                ## forgetting
+                self.decay_allsch()
                 # update transition matrix
                 scht.update(xtm,xt)
                 scht.ntimes_sampled += 1
@@ -162,80 +177,6 @@ class SEM():
             schtrm = scht 
         return data
 
-
-
-class SchemaDeltaLearner():
-    """ no prior
-    tabluar learner 
-    delta rule updates randomly initialized distribution 
-    """
-    def __init__(self,init_lr=0.3,lr_decay_rate=0.1):
-        self.nstates = STSPACE_SIZE
-        # paramS
-        self.init_lr = init_lr  # fit
-        self.lr_decay_rate = lr_decay_rate # fit; larger faster decay 
-        # init objects
-        self.Tmat = self._init_transition_matrix()
-        self.nupdates = 1
-
-    def _init_transition_matrix(self):
-        # T[s0,s1] = pr(s1|s0)
-        T = np.random.random((self.nstates,self.nstates))
-        T = np.transpose(T/T.sum(axis=0)) # rows sum to one
-        return T
-
-    def calc_error_obs(self,st0,st1):
-        """ delta err vec is len Nstates
-        O(st0) - pr(st1), where pr(st1) 
-        is next state prediciton (softmax)
-        """
-        obs = np.zeros(self.nstates)
-        obs[st1] = 1
-        delta_err_vec = obs-self.Tmat[st0]
-        return delta_err_vec
-
-    def calc_error_on_path(self,path):
-        """ returns {st0: delta_err_vec} for st0 in path
-        """
-        D = {}
-        for st0,st1 in zip(path[:-1],path[1:]):
-            D[st0] = self.calc_error_obs(st0,st1)
-        return D
-
-    def update_sch(self,path):
-        lr=self.get_lr()
-        errD = self.calc_error_on_path(path)
-        for st0,errvec in errD.items():
-            self.Tmat[st0,:] += lr*errvec
-        self.nupdates += 1
-        return None
-
-    def get_lr(self):
-        return self.init_lr*np.exp(-self.lr_decay_rate*self.nupdates)
-
-    def eval(self):
-        """ 
-        eval schema response on all paths
-        returns [npaths,nsteps] 
-        where each entry is probability of correct response
-        """
-        task = Task()
-        paths = [item for sublist in task.paths for item in sublist]
-        acc_arr = []
-        for path in paths:
-            acc_arr.append(self.eval_path(path))
-        return np.array(acc_arr)
-
-    def eval_path(self,path):
-        accL = []
-        for s0,s1 in zip(path[:-1],path[1:]):
-            accL.append(self.Tmat[s0,s1])
-        return np.array(accL)
-
-    def calc_pe(self,path):
-        errD = self.calc_error_on_path(path)
-        pe = np.sum([i**2 for i in list(errD.values())])
-        return pe
 
 
 
