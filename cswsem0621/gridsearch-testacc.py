@@ -16,8 +16,8 @@ gsdir = 'gs0823'
 # beta2==FALSE
 
 # c,stwi,stbt,sp,pvar,lrate,lratep,decay
-param_str = str(sys.argv[1])
-c,stwi,stbt,sp,pvar,lr,lrp,dy = param_str.split()
+param_strin = str(sys.argv[1])
+c,stwi,stbt,sp,pvar,lr,lrp,dy = param_strin.split()
 
 ## default params
 expargs = {
@@ -48,7 +48,7 @@ print('params',param_str)
 p_name = 'concentration'
 p_vals = np.arange(0.01,2.8,0.1)
 
-ns = 25
+ns = 2
 dfL = []
 condL = ['blocked','interleaved','early','middle','late']
 for idx,p_val in enumerate(p_vals):
@@ -71,6 +71,6 @@ for idx,p_val in enumerate(p_vals):
 
 gsdf = pd.DataFrame(dfL)
 tstamp = time.perf_counter_ns()
-gsdf.to_csv('data/%s/gsdf%i.csv'%(gsdir,tstamp))
+gsdf.to_csv('data/%s/gsdf%i-%s.csv'%(gsdir,tstamp,param_str))
 
 print('done')
