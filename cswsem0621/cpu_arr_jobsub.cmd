@@ -21,6 +21,8 @@ echo ${param_str}
 # submit job
 srun python gridsearch-testacc.py "${param_str}"
 
+echo "done.sh"
+
 # slurm diagnostics
 sacct --format="CPUTime,MaxRSS"
 
