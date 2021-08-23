@@ -48,7 +48,7 @@ print('params',param_str)
 p_name = 'concentration'
 p_vals = np.arange(0.01,2.8,0.1)
 
-ns = 2
+ns = 25
 dfL = []
 condL = ['blocked','interleaved','early','middle','late']
 for idx,p_val in enumerate(p_vals):
