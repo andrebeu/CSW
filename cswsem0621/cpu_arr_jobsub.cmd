@@ -2,7 +2,7 @@
 
 #SBATCH -t 5:59:00   # runs for 48 hours (max)  
 #SBATCH -N 1         # node count 
-#SBATCH -c 1         # number of cores 
+#SBATCH -c 2         # number of cores 
 #SBATCH --mem 4000
 #SBATCH -o ./slurms/output.%j.%a.out
 

@@ -80,7 +80,7 @@ def run_batch_exp(ns,args):
   dataL = []
   for i in range(ns):
     task = Task()
-    sem = SEM(args['sch'])
+    sem = SEM(schargs=args['sch'],**args['sem'])
     exp,curr  = task.generate_experiment(**args['exp'])
     data = sem.run_exp(exp)
     data['exp']=exp

@@ -8,12 +8,11 @@ from itertools import product
 import numpy as np
 from utils import *
 from model import *
-import time
-
-## 
+import time 
 import sys
-gsdir = 'gs0823'
-# beta2==FALSE
+##
+gsdir = 'gs0824'
+##
 
 # c,stwi,stbt,sp,pvar,lrate,lratep,decay
 param_strin = str(sys.argv[1])
@@ -36,12 +35,16 @@ schargs = {
     'lratep':float(lrp),
     'decay_rate':float(dy),
 } 
-
+semargs = {
+  'beta2':False
+}
 args = {
+    'sem':semargs,
     'sch':schargs,
     'exp':expargs
 }
 param_str = "-".join(["%s_%.3f"%(i,j) for i,j in schargs.items()])
+param_str += "-"+"-".join(["%s_%.3f"%(i,j) for i,j in semargs.items()])
 print('params',param_str)
 
 # sweep over concentration

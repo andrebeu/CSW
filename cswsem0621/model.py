@@ -2,7 +2,6 @@ import numpy as np
 
 NSTATES = 9
 MAX_SCH = 200
-BETA2 = False
 
 class SchemaTabularBayes():
     """ CRP prior
@@ -66,10 +65,10 @@ class SchemaTabularBayes():
 
 class SEM():
 
-    def __init__(self,schargs):
+    def __init__(self,schargs,beta2):
         self.SchClass = SchemaTabularBayes
         self.schargs = schargs
-        self.beta2_flag = BETA2
+        self.beta2_flag = beta2
         self.init_schlib()
 
     def init_schlib(self):
