@@ -11,7 +11,7 @@ from model import *
 import time 
 import sys
 ##
-gsdir = 'gs0824'
+gsdir = 'gs0825'
 ##
 
 # c,stwi,stbt,sp,pvar,lrate,lratep,decay
@@ -49,9 +49,9 @@ print('params',param_str)
 
 # sweep over concentration
 p_name = 'concentration'
-p_vals = np.arange(0.01,2.8,0.1)
+p_vals = np.arange(0.01,4,0.1)
 
-ns = 25
+ns = 100
 dfL = []
 condL = ['blocked','interleaved','early','middle','late']
 for idx,p_val in enumerate(p_vals):
