@@ -1,7 +1,7 @@
 import numpy as np
 
 NSTATES = 9
-MAX_SCH = 200
+MAX_SCH = 41
 
 class SchemaTabularBayes():
     """ CRP prior

@@ -48,8 +48,8 @@ param_str += "-"+"-".join(["%s_%.3f"%(i,j) for i,j in semargs.items()])
 print('params',param_str)
 
 # sweep over concentration
-p_name = 'stickiness_bt'
-p_vals = [8,10]
+p_name = 'stickiness_wi'
+p_vals = [5000]
 
 ns = 25
 dfL = []
