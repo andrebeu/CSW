@@ -164,7 +164,7 @@ class SEM():
                 zt = self.select_sch(xtm,xt,schtm.schidx,schtrm.schidx)
                 scht = self.schlib[zt]
                 ## forgetting
-                self.decay_allsch()
+                scht.decay()
                 # update transition matrix
                 scht.update(xtm,xt)
                 scht.ntimes_sampled += 1
