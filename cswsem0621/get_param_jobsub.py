@@ -9,9 +9,9 @@ given an index, return parameter string
 
 param_set_idx = int(sys.argv[1])
 
-c = [0] # concentration sweep within gs script
-stwi = [3500,5000] # stickiness_wi
-stbt = np.arange(20) # stickiness_bt
+c = np.arange(2,15,0.25) # concentration sweep within gs script
+stwi = [5000] # stickiness_wi
+stbt = [0] # stickiness_bt
 sp = np.arange(0.01,1.2,0.025) # sparsity
 pvar = [2] # pvar
 lrate = [1] # lrate

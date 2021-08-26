@@ -48,10 +48,10 @@ param_str += "-"+"-".join(["%s_%.3f"%(i,j) for i,j in semargs.items()])
 print('params',param_str)
 
 # sweep over concentration
-p_name = 'concentration'
-p_vals = np.arange(2,13,0.25)
+p_name = 'stickiness_bt'
+p_vals = [8,10]
 
-ns = 50
+ns = 25
 dfL = []
 condL = ['blocked','interleaved','early','middle','late']
 for idx,p_val in enumerate(p_vals):
