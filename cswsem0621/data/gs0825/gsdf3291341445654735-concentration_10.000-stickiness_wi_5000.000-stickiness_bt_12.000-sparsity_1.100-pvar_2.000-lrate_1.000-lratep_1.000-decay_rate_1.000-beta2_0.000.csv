@@ -1,0 +1,2 @@
+,concentration,stickiness_wi,stickiness_bt,sparsity,pvar,lrate,lratep,decay_rate,blocked,interleaved,early,middle,late
+0,10.0,5000,12.0,1.1,2.0,1.0,1.0,1.0,1.0,0.5012345205484336,1.0,0.4923429747254356,0.491749999999996
