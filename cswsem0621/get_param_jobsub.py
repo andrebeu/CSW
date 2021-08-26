@@ -25,7 +25,7 @@ itrprod = itertools.product(
 gsize = len(c)*len(stwi)*len(stbt)*len(sp)*\
 len(pvar)*len(lrate)*len(lratep)*len(decay)
 
-print('grid size',gsize,'COMMENT OUT BEFORE RUNNING')
+# print('grid size',gsize,'COMMENT OUT BEFORE RUNNING')
 
 for idx,paramL in enumerate(itrprod):
   if idx == param_set_idx:
