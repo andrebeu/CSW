@@ -49,9 +49,9 @@ print('params',param_str)
 
 # sweep over concentration
 p_name = 'concentration'
-p_vals = np.arange(0.01,4,0.1)
+p_vals = np.arange(2,13,0.25)
 
-ns = 100
+ns = 50
 dfL = []
 condL = ['blocked','interleaved','early','middle','late']
 for idx,p_val in enumerate(p_vals):
