@@ -10,8 +10,10 @@ from utils import *
 from model import *
 import time 
 import sys
+
 ##
-gsdir = 'gs0825'
+tstamp = time.perf_counter_ns()
+gsdir = 'gs0828'
 ##
 
 # c,stwi,stbt,sp,pvar,lrate,lratep,decay
@@ -49,9 +51,9 @@ print('params',param_str)
 
 # sweep over concentration
 p_name = 'stickiness_wi'
-p_vals = [5000]
+p_vals = np.arange(600,701,10)
 
-ns = 25
+ns = 50
 dfL = []
 condL = ['blocked','interleaved','early','middle','late']
 for idx,p_val in enumerate(p_vals):
@@ -64,6 +66,15 @@ for idx,p_val in enumerate(p_vals):
   mean_acc = batch_acc.mean(1)
   test_acc = mean_acc[:,-40:].mean(1) # curr  
   
+  ## plt each param
+  # plt.figure(figsize=(20,10))
+  # for idx in range(len(condL)):
+  #   plt.plot(mean_acc[idx],label=condL[idx])
+  # plt.legend()
+  # param_str = "-".join(["%s_%.3f"%(i,j) for i,j in schargs.items()])
+  # param_str += "-"+"-".join(["%s_%.3f"%(i,j) for i,j in semargs.items()])
+  # plt.savefig('data/%s/figures/gsdf%i-%s.png'%(gsdir,tstamp,param_str))
+
   ## record
   gsD = {
     **schargs,
@@ -73,7 +84,7 @@ for idx,p_val in enumerate(p_vals):
   
 
 gsdf = pd.DataFrame(dfL)
-tstamp = time.perf_counter_ns()
+
 gsdf.to_csv('data/%s/gsdf%i-%s.csv'%(gsdir,tstamp,param_str))
 
 print('done')

@@ -9,11 +9,11 @@ given an index, return parameter string
 
 param_set_idx = int(sys.argv[1])
 
-c = np.arange(8,20,0.5) # concentration 
-stwi = [5000] # stickiness_wi
-stbt = np.arange(6,14,0.5) # stickiness_bt
-sp = np.arange(0.8,1.21,0.1) # sparsity
-pvar = [2] # pvar
+c = np.arange(290,308,2) # concentration = 305
+stwi = [0] # stickiness_wi
+stbt = np.arange(450,600,2.5) # stickiness_bt = 520    
+sp = np.arange(0.85,1.21,0.1) # sparsity
+pvar = [0] # pvar
 lrate = [1] # lrate
 lratep = [1] # lratep
 decay = [1] # decay_rate
