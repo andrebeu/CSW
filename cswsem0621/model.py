@@ -104,12 +104,13 @@ class SEM():
         if active_only: # prediction
             priors = [sch.get_prior(beta_mode,ztm,ztrm) for sch in self.schlib if sch.ntimes_sampled>0]
             likes = [sch.get_like(xtm1,xt) for sch in self.schlib if sch.ntimes_sampled>0]
+            # print(self.tstep,likes)
         else: # sch inference
             priors = [sch.get_prior(beta_mode,ztm,ztrm) for sch in self.schlib]
             likes = [sch.get_like(xtm1,xt) for sch in self.schlib]
             # record 
-            self.data['priors'][self.tridx,self.tstep,:len(priors)] = priors
-            self.data['likes'][self.tridx,self.tstep,:len(likes)] = likes
+            self.data['prior'][self.tridx,self.tstep,:len(priors)] = priors
+            self.data['like'][self.tridx,self.tstep,:len(likes)] = likes
         posteriors = [p*l for p,l in zip(priors,likes)]
         return posteriors
 
@@ -142,8 +143,8 @@ class SEM():
         self.data = data = {
             'zt':-np.ones([len(exp),len(exp[0])]),
             'xth':-np.ones([len(exp),len(exp[0]),NSTATES]),
-            'priors':-np.ones([len(exp),len(exp[0]),MAX_SCH]),
-            'likes':-np.ones([len(exp),len(exp[0]),MAX_SCH]),
+            'prior':-np.ones([len(exp),len(exp[0]),MAX_SCH]),
+            'like':-np.ones([len(exp),len(exp[0]),MAX_SCH]),
             'post':-np.ones([len(exp),len(exp[0]),MAX_SCH]),
         }
         ## 
@@ -152,6 +153,7 @@ class SEM():
         for tridx,trialL in enumerate(exp):
             self.tridx = tridx
             for tstep,(xtm,xt) in enumerate(zip(trialL[:-1],trialL[1:])):
+                if tstep==1:continue
                 if len(self.schlib)>=MAX_SCH:
                     return data
                 # print('ts',tstep)
@@ -163,6 +165,7 @@ class SEM():
                 # update infered active schema
                 zt = self.select_sch(xtm,xt,schtm.schidx,schtrm.schidx)
                 scht = self.schlib[zt]
+                # print(tstep,scht.Tmat,self.data['likes'][:20,:,1])
                 ## forgetting
                 scht.decay()
                 # update transition matrix

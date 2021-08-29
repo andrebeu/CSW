@@ -65,8 +65,11 @@ def unpack_data(cbatch_data,dtype='priors'):
     L = []
     for cidx in range(len(cbatch_data)):
         L.append([])
-        for sbatch_data in cbatch_data[cidx]:
-            mask = np.all(sbatch_data[dtype]!=-1,0)[0]
+        for sidx,sbatch_data in enumerate(cbatch_data[cidx]):
+            # print(sidx,sbatch_data[dtype].shape)
+            # assert False
+            mask = np.any(sbatch_data[dtype]!=-1,0)[0]
+            # print(mask)
             L[cidx].append(sbatch_data[dtype][:,:,mask])
     return L
 
