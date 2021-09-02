@@ -30,9 +30,9 @@ class SchemaTabularBayes():
             return self.alfa
         ztm1_flag = ztm1 == self.schidx
         ztrm1_flag = ztrm1 == self.schidx
-        if beta_mode == 0: # beta within
+        if beta_mode == 0: # beta within only
             crp = self.lratep*self.ntimes_sampled + self.beta_wi* ztm1_flag
-        elif beta_mode == 1: # beta between
+        elif beta_mode == 1: # beta between only
             assert ztm1 == ztrm1
             crp = self.lratep*self.ntimes_sampled + self.beta_bt* ztm1_flag
         elif beta_mode == 2: # combined
@@ -65,10 +65,11 @@ class SchemaTabularBayes():
 
 class SEM():
 
-    def __init__(self,schargs,beta2):
+    def __init__(self,schargs,beta2,skipt1=True):
         self.SchClass = SchemaTabularBayes
         self.schargs = schargs
         self.beta2_flag = beta2
+        self.skipt1 = skipt1
         self.init_schlib()
 
     def init_schlib(self):
@@ -87,14 +88,13 @@ class SEM():
         return None
 
     def get_beta_mode(self):
-        if self.beta2_flag: # combined
-            return 2
-        else: # between
-            if self.tstep == 0:
-                return 1
-            else: # within
-                return 0 
-        assert False
+        if self.tstep==0: 
+            if self.beta2_flag:
+                return 2 # between+within
+            else: 
+                return 1 # between only
+        else:
+            return 0 # within only
         return None
 
     def calc_posteriors(self,xtm1,xt,ztm,ztrm,active_only=False):
@@ -153,9 +153,9 @@ class SEM():
         for tridx,trialL in enumerate(exp):
             self.tridx = tridx
             for tstep,(xtm,xt) in enumerate(zip(trialL[:-1],trialL[1:])):
-                if tstep==1:continue
-                if len(self.schlib)>=MAX_SCH:
-                    return data
+                # conditional
+                if (tstep==1) and (self.skipt1): continue
+                if len(self.schlib)>=MAX_SCH: return data
                 # print('ts',tstep)
                 self.tstep = tstep
                 ## prediction: marginilize over schemas
