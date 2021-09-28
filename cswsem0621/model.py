@@ -1,4 +1,5 @@
 import numpy as np
+from scipy.special import softmax
 
 NSTATES = 9
 MAX_SCH = 41
@@ -65,11 +66,12 @@ class SchemaTabularBayes():
 
 class SEM():
 
-    def __init__(self,schargs,beta2,skipt1=True):
+    def __init__(self,schargs,beta2,skipt1=True,ppd_allsch=False):
         self.SchClass = SchemaTabularBayes
         self.schargs = schargs
         self.beta2_flag = beta2
         self.skipt1 = skipt1
+        self.ppd_allsch = ppd_allsch
         self.init_schlib()
 
     def init_schlib(self):
@@ -89,10 +91,9 @@ class SEM():
 
     def get_beta_mode(self):
         if self.tstep==0: 
-            if self.beta2_flag:
-                return 2 # between+within
-            else: 
-                return 1 # between only
+            return 1 # between only
+        elif self.beta2_flag:
+            return 2 # between+within
         else:
             return 0 # within only
         return None
@@ -128,10 +129,23 @@ class SEM():
         """ 
         """
         pr_xt_z = np.array([
-            self.calc_posteriors(xtm1,x,ztm,ztrm,active_only=True) for x in range(NSTATES)
+            self.calc_posteriors(xtm1,x,ztm,ztrm,active_only=True
+                ) for x in range(NSTATES)
             ]) # probability of each next state under each schema
-        pr_xtp1 = np.mean(pr_xt_z,axis=1) # sum over schemas
+        pr_xtp1 = np.sum(pr_xt_z,axis=1) # sum over schemas
+        ## debug printing
+        # if self.tstep==0:
+        #     print(self.tridx)
+        #     if self.tridx<=40:
+        #         print('-sch0',pr_xt_z[1:3,0])
+        #     elif self.tridx>40:
+        #         print('-sch0',pr_xt_z[1:3,0])
+        #         print('-sch1',pr_xt_z[1:3,1])
+        #     # print(self.tridx,pr_xt_z.shape,pr_xt_z[:4,:].T)
+        #     print('ppd',pr_xtp1[1:3])
+        #     print('softmax',softmax(pr_xtp1[1:3]).round(4))
         # print(pr_xtp1)
+
         return pr_xtp1
 
     def run_exp(self,exp):
@@ -159,7 +173,10 @@ class SEM():
                 # print('ts',tstep)
                 self.tstep = tstep
                 ## prediction: marginilize over schemas
-                xth = self.predict(xtm,schtm.schidx,schtrm.schidx)
+                if self.ppd_allsch:
+                    xth = self.predict(xtm,schtm.schidx,schtrm.schidx)
+                else:
+                    xth = scht.predict(xtm)
                 ## prediction: only active schema
                 # xth = scht.predict(xtm)
                 # update infered active schema

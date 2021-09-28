@@ -40,6 +40,7 @@ def get_acc(data):
   """
   ysm = get_sm(data['xth'])
   L = []
+  # loop over layers
   for i in range(2):
     ysml = ysm[i,:,:]
     yt = data['exp'][:,i+3] 
