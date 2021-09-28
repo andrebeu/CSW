@@ -32,21 +32,31 @@ def get_sm(xth,norm=True):
     L.append(y)
   return np.array(L)
 
-def get_acc(data):
-  """ 
-  returns 2afc softmax of 
-  layer 2/3 transitions
-  single seed
-  """
-  ysm = get_sm(data['xth'])
-  L = []
-  # loop over layers
-  for i in range(2):
-    ysml = ysm[i,:,:]
-    yt = data['exp'][:,i+3] 
-    pr_yt = ysml[range(len(ysml)),yt - (5+2*i)] # 
-    L.append(pr_yt)
-  return np.array(L)
+def get_acc(data,mode=2):
+    """ 
+    returns 2afc softmax of 
+    layer 2/3 transitions
+    single seed
+    """
+    if mode == 1:
+        ysm = get_sm(data['xth'])
+        # print(data['xth'],ysm)
+        L = []
+        # loop over layers
+        for i in range(2):
+            ysml = ysm[i,:,:]
+            yt = data['exp'][:,i+3] 
+            pr_yt = ysml[range(len(ysml)),yt - (5+2*i)] # 
+            L.append(pr_yt)
+        return np.array(L)
+    elif mode==2:
+        xth = data['xth']
+        resp = xth.argmax(-1)
+        exp = data['exp']
+        score = resp[:,2:4] == exp[:,3:5]
+        # transpose required for backcompatibility
+        return score.T
+
 
 def unpack_acc(cbatch_data):
     """ 
