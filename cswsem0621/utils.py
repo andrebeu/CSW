@@ -1,3 +1,4 @@
+import pandas as pd
 import numpy as np
 from matplotlib import pyplot as plt
 from scipy.special import softmax
@@ -5,13 +6,13 @@ from itertools import product
 import time
 import seaborn as sns
 sns.set_context('talk')
+from model import *
 
 ## import human data for fitting
-import pandas as pd
 hdf = pd.read_csv('../human_data.csv')
 humanB_acc,humanI_acc = hdf.loc[:,('blocked mean','interleaved mean')].values.T
 
-from model import *
+
 
 def get_sm(xth,norm=True):
   """ 
