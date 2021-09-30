@@ -6,13 +6,13 @@ from itertools import product
 import time
 import seaborn as sns
 sns.set_context('talk')
-from model import *
 
+from model import *
 ## import human data for fitting
 hdf = pd.read_csv('../human_data.csv')
 humanB_acc,humanI_acc = hdf.loc[:,('blocked mean','interleaved mean')].values.T
 
-
+FLAG_SMACC = False
 
 def get_sm(xth,norm=True):
   """ 
@@ -33,13 +33,13 @@ def get_sm(xth,norm=True):
     L.append(y)
   return np.array(L)
 
-def get_acc(data,mode=2):
+def get_acc(data,acc_mode=FLAG_SMACC):
     """ 
     returns 2afc softmax of 
     layer 2/3 transitions
     single seed
     """
-    if mode == 1:
+    if acc_mode: # compute softmax acc
         ysm = get_sm(data['xth'])
         # print(data['xth'],ysm)
         L = []
@@ -50,7 +50,7 @@ def get_acc(data,mode=2):
             pr_yt = ysml[range(len(ysml)),yt - (5+2*i)] # 
             L.append(pr_yt)
         return np.array(L)
-    elif mode==2:
+    else: # compute score
         xth = data['xth']
         resp = xth.argmax(-1)
         exp = data['exp']

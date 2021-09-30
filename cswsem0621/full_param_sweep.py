@@ -17,7 +17,7 @@ os.mkdir(FIGDIR)
 os.mkdir(FIGDIR+'single')
 
 ## number seeds
-ns = 15
+ns = 50
 
 ## default base params
 expargs = {
