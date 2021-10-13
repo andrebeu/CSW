@@ -12,7 +12,10 @@ from model import *
 hdf = pd.read_csv('../human_data.csv')
 humanB_acc,humanI_acc = hdf.loc[:,('blocked mean','interleaved mean')].values.T
 
-FLAG_SMACC = False
+FLAG_SMACC = True
+
+def softmax_custom(x,tau):
+    return np.exp(x*tau)/np.sum(np.exp(x*tau))
 
 def get_sm(xth,norm=True):
   """ 
@@ -28,8 +31,11 @@ def get_sm(xth,norm=True):
   L = [] # layer 2 and 3
   for l,ns in nodes.items():
     y = xth[:,l,ns]
+    # print(y.shape)
+    # assert False
     if norm:
-      y=softmax(y,1)
+      # y = softmax(y,1)
+      y = np.array([softmax_custom(yt,3) for yt in y])
     L.append(y)
   return np.array(L)
 

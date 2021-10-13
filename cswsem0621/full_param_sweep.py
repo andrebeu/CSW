@@ -17,28 +17,40 @@ os.mkdir(FIGDIR)
 os.mkdir(FIGDIR+'single')
 
 ## number seeds
-ns = 50
+ns = 10
 
-## default base params
-expargs = {
-  'condition':'blocked',
-  'n_train':160,
-  'n_test':40
+## sweep
+param_sweepD = {
+    # 'concentration':np.arange(47,54,2),
+    'stickiness_wi':np.arange(40,76,2),
+    # 'stickiness_bt':np.arange(70,91,2),
+    # 'sparsity':np.arange(0.6,1.11,.05),
+    # 'pvar':np.arange(0,2,0.2),
+    # 'lrate':np.arange(0.8,1.01,0.05),
+    # 'lratep':np.arange(.01,.5,.05),
+    # 'decay_rate':np.arange(0.98,1.000001,0.001)
 }
+## defaults
 schargs = {
-   'concentration':3,
-   'stickiness_wi':10,
-   'stickiness_bt':10,
+   'concentration':60,
+   'stickiness_wi':76,
+   'stickiness_bt':76,
    'sparsity':1,
    'pvar': 0,
    'lrate':1,
-   'lratep':.3,
+   'lratep':1,
    'decay_rate':1,
 }
 semargs = {
   'beta2':False,
   'skipt1':True,
   'ppd_allsch':False
+}
+## default base params
+expargs = {
+  'condition':'blocked',
+  'n_train':160,
+  'n_test':40
 }
 args = {
     'sem':semargs,
@@ -52,16 +64,7 @@ param_str
 
 # In[4]:
 
-param_sweepD = {
-    'concentration':np.arange(1,5,.25),
-    'stickiness_wi':np.arange(5,15,1),
-    'stickiness_bt':np.arange(0.01,5,.5),
-    'sparsity':np.arange(0.01,1,0.1),
-    'pvar':np.arange(0,2,0.2),
-    'lrate':np.arange(0.8,1.01,0.05),
-    'lratep':np.arange(.01,.5,.05),
-    'decay_rate':np.arange(0.98,1.000001,0.001)
-}
+
 
 
 # ### main
@@ -87,11 +90,12 @@ def pltsave_macc(macc,schargs=None,labL=['B','I','E','M','L'],close=True):
 # In[6]:
 
 
-dfL = []
+# dfL = []
 condL = ['blocked','interleaved','early','middle','late']
 
 
 for p_name,p_vals in param_sweepD.items():
+    dfL = []
     print(p_name,p_vals)
 
     for idx,p_val in enumerate(p_vals):

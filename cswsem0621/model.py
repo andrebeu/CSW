@@ -2,7 +2,7 @@ import numpy as np
 from scipy.special import softmax
 
 NSTATES = 9
-MAX_SCH = 41
+MAX_SCH = 205
 
 class SchemaTabularBayes():
     """ CRP prior
@@ -66,7 +66,7 @@ class SchemaTabularBayes():
 
 class SEM():
 
-    def __init__(self,schargs,beta2,skipt1=True,ppd_allsch=False):
+    def __init__(self,schargs,beta2,skipt1,ppd_allsch):
         self.SchClass = SchemaTabularBayes
         self.schargs = schargs
         self.beta2_flag = beta2
@@ -133,19 +133,6 @@ class SEM():
                 ) for x in range(NSTATES)
             ]) # probability of each next state under each schema
         pr_xtp1 = np.sum(pr_xt_z,axis=1) # sum over schemas
-        ## debug printing
-        # if self.tstep==0:
-        #     print(self.tridx)
-        #     if self.tridx<=40:
-        #         print('-sch0',pr_xt_z[1:3,0])
-        #     elif self.tridx>40:
-        #         print('-sch0',pr_xt_z[1:3,0])
-        #         print('-sch1',pr_xt_z[1:3,1])
-        #     # print(self.tridx,pr_xt_z.shape,pr_xt_z[:4,:].T)
-        #     print('ppd',pr_xtp1[1:3])
-        #     print('softmax',softmax(pr_xtp1[1:3]).round(4))
-        # print(pr_xtp1)
-
         return pr_xtp1
 
     def run_exp(self,exp):
@@ -163,12 +150,13 @@ class SEM():
         }
         ## 
         scht = schtm = schtrm = self.schlib[0] # sch0 is active to start
-        scht.ntimes_sampled += 1
+        # scht.ntimes_sampled += 1
         for tridx,trialL in enumerate(exp):
             self.tridx = tridx
             for tstep,(xtm,xt) in enumerate(zip(trialL[:-1],trialL[1:])):
                 # conditional
-                if (tstep==1) and (self.skipt1): continue
+                if (tstep==1) and (self.skipt1): 
+                    continue
                 if len(self.schlib)>=MAX_SCH: return data
                 # print('ts',tstep)
                 self.tstep = tstep
