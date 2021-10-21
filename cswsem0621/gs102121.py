@@ -7,28 +7,20 @@ from itertools import product
 import numpy as np
 from utils import *
 from model import *
-import time
+from datetime import datetime
 
-########
-# ## timestamp and dir for saving
-# tstamp = time.perf_counter_ns()
-# figdir = 'figures/single_model_nb/%s-%i/'%(param_str,tstamp)
-# os.makedirs(figdir)
-# ## timestamp and dir for saving
-# tstamp = time.perf_counter_ns()
-# FIGDIR = 'figures/fullsweep/%i/'%tstamp
-# os.mkdir(FIGDIR)
-# os.mkdir(FIGDIR+'single')
-#######
+## timing
+startTime = datetime.now() 
 
+## saving dir
 GSDIR = 'data/gs1021/'
 
-
-alfa = float(sys.argv[1])
-bwi = float(sys.argv[2])
-bbt = float(sys.argv[3])
-# spar = float(sys.argv[4]) ## within GS
-sparsityL = list(np.arange(0.01,2,0.1)) + list(np.arange(0.01,0.3,0.025))
+## param input
+param_strin = str(sys.argv[1])
+c,stwi,stbt = param_strin.split()
+alfa = float(c)
+bwi = float(stwi)
+bbt = float(stbt)
 
 schargs = {
     'concentration':alfa,
@@ -57,17 +49,21 @@ args = {
 }
 
 
-# ### main runtime
+## setup
 
-num_seeds = 20
+num_seeds = 1
 condL = ['blocked','interleaved',
          'early','middle','late'
         ]
+print('SETUP','ns=',num_seeds,condL)
 
 ## internal sweep
 p_name = 'sparsity'
+sparsityL = list(np.arange(0.01,2,0.1)) + list(np.arange(0.01,0.3,0.025))
 p_vals = sparsityL
+print('spar list',sparsityL)
 
+## runtime
 for idx,p_val in enumerate(p_vals):
     print(idx/len(p_vals))
     # run
@@ -79,8 +75,9 @@ for idx,p_val in enumerate(p_vals):
     param_str += "-"+"-".join(["%s_%.3f"%(i,j) for i,j in args['sem'].items()])
     np.save(GSDIR+'rawacc/acc-'+param_str,batch_acc)
 
+delta_time = datetime.now() - startTime 
 print('DONE')
-
+print('TIME TAKEN',delta_time)
 
 # def calc_adjrand(exp_batch_data):
 #   arscores = -np.ones([len(condL),ns,3])
