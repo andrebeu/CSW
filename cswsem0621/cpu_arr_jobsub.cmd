@@ -21,7 +21,7 @@ param_str=`python get_param_jobsub.py ${slurm_arr_idx}`
 echo ${param_str}
 
 # submit job
-srun python gridsearch-testacc.py "${param_str}"
+srun python gs102121.py "${param_str}"
 
 echo "done.sh"
 
