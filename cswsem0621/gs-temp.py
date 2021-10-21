@@ -28,7 +28,7 @@ alfa = float(sys.argv[1])
 bwi = float(sys.argv[2])
 bbt = float(sys.argv[3])
 # spar = float(sys.argv[4]) ## within GS
-sparsityL = list(np.arange(0,2,0.1)) + list(np.arange(0.01,0.3,0.025))
+sparsityL = list(np.arange(0.01,2,0.1)) + list(np.arange(0.01,0.3,0.025))
 
 schargs = {
     'concentration':alfa,
@@ -59,7 +59,7 @@ args = {
 
 # ### main runtime
 
-num_seeds = 15
+num_seeds = 20
 condL = ['blocked','interleaved',
          'early','middle','late'
         ]

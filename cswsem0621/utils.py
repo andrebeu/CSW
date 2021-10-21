@@ -12,7 +12,7 @@ from model import *
 hdf = pd.read_csv('../human_data.csv')
 humanB_acc,humanI_acc = hdf.loc[:,('blocked mean','interleaved mean')].values.T
 
-FLAG_SMACC = False
+FLAG_SMACC = True
 
 def softmax_custom(x,tau):
     return np.exp(x*tau)/np.sum(np.exp(x*tau))
