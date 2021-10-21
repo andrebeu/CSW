@@ -51,7 +51,7 @@ args = {
 
 ## setup
 
-num_seeds = 1
+num_seeds = 25
 condL = ['blocked','interleaved',
          'early','middle','late'
         ]
