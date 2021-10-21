@@ -14,7 +14,6 @@ bwi = sys.argv[2]
 bbt = sys.argv[3]
 spar = sys.argv[4]
 
-
 schargs = {
     'concentration':3.1,
     'stickiness_wi':50,
@@ -30,7 +29,6 @@ semargs = {
     'skipt1':False,
     'ppd_allsch':False
 }
-
 taskargs = {
     'condition':None,
     'n_train':160,
