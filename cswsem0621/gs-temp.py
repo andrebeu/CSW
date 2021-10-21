@@ -37,7 +37,7 @@ schargs = {
     'sparsity':00,
     'pvar': 0,
     'lrate':1,
-    'lratep':.01,
+    'lratep':1,
     'decay_rate':1,
 }
 semargs = {
