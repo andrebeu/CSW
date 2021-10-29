@@ -13,15 +13,17 @@ conda activate sem
 # module load anaconda3/4.4.0
 # source activate sem
 
-# get arr idx
-slurm_arr_idx=${SLURM_ARRAY_TASK_ID}
 
-# use arr idx to get params
-param_str=`python get_param_jobsub.py ${slurm_arr_idx}`
-echo ${param_str}
 
-# submit job
-srun python gs102121.py "${param_str}"
+## use arr idx to get params
+## get arr idx
+# slurm_arr_idx=${SLURM_ARRAY_TASK_ID}
+# param_str=`python get_param_jobsub.py ${slurm_arr_idx}`
+# echo ${param_str}
+
+## submit job
+# srun python gs102121.py "${param_str}"
+srun python gs102921.py 
 
 echo "done.sh"
 

@@ -9,105 +9,83 @@ from utils import *
 from model import *
 from datetime import datetime
 
+## RANDOM GRIDSEARCHING
+
 ## timing
 startTime = datetime.now() 
+tstamp = time.perf_counter_ns()
 
 ## saving dir
-GSDIR = 'data/gs1021/'
+GSDIR = 'data/gs1029/'
 
-## param input
-param_strin = str(sys.argv[1])
-c,stwi,stbt = param_strin.split()
-alfa = float(c)
-bwi = float(stwi)
-bbt = float(stbt)
-
-schargs = {
-    'concentration':alfa,
-    'stickiness_wi':bwi,
-    'stickiness_bt':bbt,
-    'sparsity':00,
-    'pvar': 0,
-    'lrate':1,
-    'lratep':1,
-    'decay_rate':1,
-}
-semargs = {
-    'beta2':False,
-    'skipt1':False,
-    'ppd_allsch':False
-}
-taskargs = {
-    'condition':None,
-    'n_train':160,
-    'n_test':40
-}
-args = {
-    'sem':semargs,
-    'sch':schargs,
-    'exp':taskargs
-}
+## param ranges
+alpha_min = 0.001
+alpha_max = 100
+betawi_min = 0.001
+betawi_max = 100
+betabt_min = 0.001
+betabt_max = 100
+lmda_min = 0.001
+lmda_max = 1.2
 
 
 ## setup
-
-num_seeds = 25
+num_seeds = 50
 condL = ['blocked','interleaved',
          'early','middle','late'
         ]
 print('SETUP','ns=',num_seeds,condL)
 
-## internal sweep
-p_name = 'sparsity'
-sparsityL = list(np.arange(0.01,2,0.1)) + list(np.arange(0.01,0.3,0.025))
-p_vals = sparsityL
-print('spar list',sparsityL)
+idx=0
 
-## runtime
-for idx,p_val in enumerate(p_vals):
-    print(idx/len(p_vals))
+dfL = []
+while True:
+    # for idx in range(5):
+    print('itr',idx)
+    itr_t0 = datetime.now() 
+    schargs = {
+        'concentration':np.random.uniform(alpha_min,alpha_max),
+        'stickiness_wi':np.random.uniform(betawi_min,betawi_max),
+        'stickiness_bt':np.random.uniform(betabt_min,betabt_max),
+        'sparsity':np.random.uniform(lmda_min,lmda_max),
+        'pvar': 0,
+        'lrate':1,
+        'lratep':1,
+        'decay_rate':1,
+    }
+    semargs = {
+        'beta2':False,
+        'skipt1':False,
+        'ppd_allsch':False
+    }
+    taskargs = {
+        'condition':None,
+        'n_train':160,
+        'n_test':40
+    }
+    args = {
+        'sem':semargs,
+        'sch':schargs,
+        'exp':taskargs
+    }
     # run
-    args['sch'][p_name] = p_val  
     exp_batch_data = run_batch_exp_curr(num_seeds,args,condL) # [curr,seeds,{data}]
     batch_acc = unpack_acc(exp_batch_data) # curr,seeds,trials
+    mean_acc = batch_acc.mean(1) # mean over seeds
+    for ci in range(len(condL)):
+        cond_df = pd.DataFrame(data={
+            **schargs,
+            'cond':condL[ci],
+            'trial':range(200),
+            'acc':mean_acc[ci]
+        })
+        dfL.append(cond_df)
     # save
-    param_str = "-".join(["%s_%.3f"%(i,j) for i,j in args['sch'].items()])
-    param_str += "-"+"-".join(["%s_%.3f"%(i,j) for i,j in args['sem'].items()])
-    np.save(GSDIR+'rawacc/acc-'+param_str,batch_acc)
+    pd.concat(dfL).to_csv(GSDIR+'df-%i.csv'%tstamp)
+    print('ITR TIME TAKEN', datetime.now() - itr_t0)
+    ##
 
+    
 delta_time = datetime.now() - startTime 
 print('DONE')
 print('TIME TAKEN',delta_time)
-
-# def calc_adjrand(exp_batch_data):
-#   arscores = -np.ones([len(condL),ns,3])
-#   for curr_idx in range(len(condL)):
-#     for seed_idx in range(ns):
-#       for t_idx,tstep in enumerate([0,2,3]):
-#         arscores[curr_idx,seed_idx,t_idx] = adjusted_rand_score(
-#           exp_batch_data[curr_idx][seed_idx]['exp'][:,1],
-#           exp_batch_data[curr_idx][seed_idx]['zt'][:,tstep]
-#         )
-#   return arscores
-
-# def count_num_schemas(exp_data):
-#   """ 
-#   """
-#   L = []
-#   for curr_idx in range(len(condL)):
-#     num_schemas_used = [
-#       len(np.unique(exp_data[curr_idx][i]['zt'][:,:-1].flatten())
-#          ) for i in range(ns)
-#     ]
-#     L.append(num_schemas_used)
-#   nschemas = np.array(L)
-#   return nschemas
-
-## acc
-# batch_acc = unpack_acc(exp_batch_data) # curr,seeds,trials
-## extract others
-# arscores = calc_adjrand(exp_batch_data) # 
-# nschemas = count_num_schemas(exp_batch_data) # curr,nseeds
-# zt = np.array(
-#   [[exp_batch_data[j][i]['zt'] for i in range(ns)] for j in range(5)]
-# ) # curr,seed,trial,tstep
