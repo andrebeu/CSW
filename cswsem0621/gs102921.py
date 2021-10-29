@@ -13,7 +13,7 @@ from datetime import datetime
 
 ## timing
 startTime = datetime.now() 
-tstamp = time.perf_counter_ns()
+tstamp = time.perf_counter_ns() + np.random.randint(999)
 
 ## saving dir
 GSDIR = 'data/gs1029/'
