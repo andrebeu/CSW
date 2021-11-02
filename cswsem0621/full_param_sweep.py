@@ -21,9 +21,9 @@ ns = 10
 
 ## sweep
 param_sweepD = {
-    # 'concentration':np.arange(47,54,2),
-    'stickiness_wi':np.arange(40,76,2),
-    # 'stickiness_bt':np.arange(70,91,2),
+    'concentration':np.arange(47,54,2),
+    # 'stickiness_wi':np.arange(70,91,5),
+    'stickiness_bt':np.arange(70,101,5),
     # 'sparsity':np.arange(0.6,1.11,.05),
     # 'pvar':np.arange(0,2,0.2),
     # 'lrate':np.arange(0.8,1.01,0.05),
@@ -31,6 +31,11 @@ param_sweepD = {
     # 'decay_rate':np.arange(0.98,1.000001,0.001)
 }
 ## defaults
+## NB THESE PARAMETERS MIGHT CHANGE BELOW
+""" 
+unintended behavior: when doing multiple loops, 
+script does not reset back to these defults
+"""
 schargs = {
    'concentration':60,
    'stickiness_wi':76,
@@ -57,16 +62,11 @@ args = {
     'sch':schargs,
     'exp':expargs
 }
-param_str = "-".join(["%s_%.3f"%(i,j) for i,j in schargs.items()])
-param_str += "-"+"-".join(["%s_%.3f"%(i,j) for i,j in semargs.items()])
-param_str
 
-
-# In[4]:
-
-
-
-
+# def param2str(args):
+#     param_str = "-".join(["%s_%.3f"%(i,j) for i,j in args['sch'].items()])
+#     param_str += "-"+"-".join(["%s_%.3f"%(i,j) for i,j in args['sem'].items()])
+#     return param_str
 # ### main
 
 def pltsave_macc(macc,schargs=None,labL=['B','I','E','M','L'],close=True):
@@ -81,6 +81,7 @@ def pltsave_macc(macc,schargs=None,labL=['B','I','E','M','L'],close=True):
   ax.axhline(0.5,c='k')
   plt.legend()
   param_str = "-".join(["%s_%.3f"%(i,j) for i,j in schargs.items()])
+  param_str = str(None) # unsafe bc changing in loop
   plt.savefig(FIGDIR+'single/acc-%s.jpg'%(param_str))
   if close:
     plt.close('all')
@@ -128,6 +129,8 @@ for p_name,p_vals in param_sweepD.items():
     ax.set_ylabel('test acc')
     for i in np.arange(0.5,1.01,0.1):
       ax.axhline(i,c='k',lw=0.5)
+    ## saving and title
+    param_str = param2str(args)
     plt.title(param_str)
     plt.savefig(FIGDIR+'testacc-sweep_%s-default_%s-t%s.png'%(
       p_name,param_str,tstamp))

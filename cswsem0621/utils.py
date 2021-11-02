@@ -15,6 +15,11 @@ humanB_acc,humanI_acc = hdf.loc[:,('blocked mean','interleaved mean')].values.T
 FLAG_SMACC = True
 SMTEMP = 4
 
+def param2str(args):
+    param_str = "-".join(["%s_%.3f"%(i,j) for i,j in args['sch'].items()])
+    param_str += "-"+"-".join(["%s_%.3f"%(i,j) for i,j in args['sem'].items()])
+    return param_str
+
 def softmax_custom(x,tau):
     return np.exp(x*tau)/np.sum(np.exp(x*tau))
 
