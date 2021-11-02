@@ -13,6 +13,7 @@ hdf = pd.read_csv('../human_data.csv')
 humanB_acc,humanI_acc = hdf.loc[:,('blocked mean','interleaved mean')].values.T
 
 FLAG_SMACC = True
+SMTEMP = 4
 
 def softmax_custom(x,tau):
     return np.exp(x*tau)/np.sum(np.exp(x*tau))
@@ -35,7 +36,7 @@ def get_sm(xth,norm=True):
     # assert False
     if norm:
       # y = softmax(y,1)
-      y = np.array([softmax_custom(yt,3) for yt in y])
+      y = np.array([softmax_custom(yt,SMTEMP) for yt in y])
     L.append(y)
   return np.array(L)
 
