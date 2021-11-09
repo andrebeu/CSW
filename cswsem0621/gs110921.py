@@ -16,7 +16,7 @@ startTime = datetime.now()
 tstamp = time.perf_counter_ns() + np.random.randint(999)
 
 ## saving dir
-GSDIR = 'data/gs1102/'
+GSDIR = 'data/gs1109/'
 
 ## param ranges
 alpha_min = 0.001
