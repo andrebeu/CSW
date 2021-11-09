@@ -75,6 +75,7 @@ while True:
     for ci in range(len(condL)):
         cond_df = pd.DataFrame(data={
             **schargs,
+            **semargs,
             'cond':condL[ci],
             'trial':range(200),
             'acc':mean_acc[ci]
