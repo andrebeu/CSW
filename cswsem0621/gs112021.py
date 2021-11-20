@@ -27,6 +27,8 @@ betabt_min = 0.001
 betabt_max = 100
 lmda_min = 0.001
 lmda_max = 1.2
+lratep_min = 0.001
+lratep_max = 1
 
 
 ## setup
@@ -50,7 +52,7 @@ while True:
         'sparsity':np.random.uniform(lmda_min,lmda_max),
         'pvar': 0,
         'lrate':1,
-        'lratep':1,
+        'lratep':np.random.uniform(lratep_min,lratep_max),
         'decay_rate':1,
     }
     semargs = {
