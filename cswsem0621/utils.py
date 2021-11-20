@@ -13,7 +13,7 @@ hdf = pd.read_csv('../human_data.csv')
 humanB_acc,humanI_acc = hdf.loc[:,('blocked mean','interleaved mean')].values.T
 
 FLAG_SMACC = True
-SMTEMP = 3  
+SMTEMP = 4  
 
 def param2str(args):
     param_str = "-".join(["%s_%.3f"%(i,j) for i,j in args['sch'].items()])
