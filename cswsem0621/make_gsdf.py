@@ -1,37 +1,39 @@
-
 import numpy as np
 from glob import glob as glob
 import pandas as pd
 
 
-gsname = 'gs1109'
+gsname = 'gs1120'
 
 MAKE_DATADF = False
 MAKE_SUMMDF = True
-
+INNER_SIZE = 250
 
 if MAKE_DATADF:
-    dfpathL = glob('data/%s/*'%gsname)
-    datadfL = []
-    for idx in np.arange(500,2001,500):
-      print(idx-500,idx)
-      ## inner
-      dfL = []
-      for p in dfpathL[idx-500:idx]:
-        try:
-          df_ = pd.read_csv(p)
-          dfL.append(df_)
-        except:
-          print('error',p)
-          continue
-      print('inner concating')
-      mini_datadf = pd.concat(dfL).drop(columns='Unnamed: 0',)
-      datadfL.append(mini_datadf)
-    print('outer concating')
-    datadf = pd.concat(datadfL)
-    # datadf ## full data
-    print('saving datadf')
-    datadf.to_csv('data/%s-datadf.csv'%gsname)
+    for jdx in range(2):
+        print('jdx',jdx)
+        dfpathL = glob('data/%s/*'%gsname)
+        datadfL = []
+        for idx in np.arange(jdx*1000+INNER_SIZE,jdx*1000+1001,INNER_SIZE):
+            print(idx-INNER_SIZE,idx)
+            ## inner
+            dfL = []
+            for p in dfpathL[idx-INNER_SIZE:idx]:
+                try:
+                    df_ = pd.read_csv(p)
+                    dfL.append(df_)
+                except:
+                    print('error',p)
+                    continue
+            print('inner concating')
+            mini_datadf = pd.concat(dfL).drop(columns='Unnamed: 0',)
+            datadfL.append(mini_datadf)
+        print('outer concating')
+        datadf = pd.concat(datadfL)
+        # datadf ## full data
+        print('saving datadf')
+        datadf.to_csv('data/%s-datadf-%i.csv'%(gsname,jdx))
+        del datadf
 else:
     ### 
     None
@@ -61,8 +63,11 @@ def make_exp_summ_df(exp_data_df):
         for cond_i,df_c in seed_df.groupby('cond'):
             ## compute metrics
             testacc = np.mean(df_c.acc[-40:])
+            # acc1 = np.mean(df_c.acc[:40])
+            acc2 = np.mean(df_c.acc[40:80])
             ## populate dataD
             dataD['testacc-%s'%cond_i[0]] = testacc
+            dataD['acc2-%s'%cond_i[0]] = acc2
         ##
         seed_summ_df_L.append(pd.DataFrame(index=[0],data=dataD))
     return pd.concat(seed_summ_df_L)
@@ -70,13 +75,14 @@ def make_exp_summ_df(exp_data_df):
 
 ## NEW STRATEGY: does not require intermediate datadf
 if MAKE_SUMMDF:
+    print('make summary df')
     dfpathL = glob('data/%s/*'%gsname)
     mini_summdf_L = []
-    for idx in np.arange(500,2001,500):
-        print(idx-500,idx)
+    for idx in np.arange(INNER_SIZE,2001,INNER_SIZE):
+        print(idx-INNER_SIZE,idx)
         ## inner
         exp_summ_df_L = []
-        for p in dfpathL[idx-500:idx]:
+        for p in dfpathL[idx-INNER_SIZE:idx]:
             try:   
                 # read an expdf 
                 # (i.e. full trace of tens of params)
