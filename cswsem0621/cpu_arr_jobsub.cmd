@@ -23,7 +23,7 @@ conda activate sem
 
 ## submit job
 # srun python gs102121.py "${param_str}"
-srun python gs120921.py 
+srun python gs0122.py 
 
 echo "done.sh"
 
