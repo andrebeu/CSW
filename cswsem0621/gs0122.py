@@ -29,7 +29,7 @@ lmda_min = 0.001
 lmda_max = 1.2
 lratep_min = 0.001
 lratep_max = 1
-decay_min = 0.97
+decay_min = 0.965
 decay_max = 1
 
 
@@ -45,9 +45,9 @@ def recordable(acc):
     conds: B,I,E,M,L
     """
     ## Btest>85
-    Btest = acc[0,-40:].mean() > 0.85
+    Btest = acc[0,-40:].mean() > 0.92
     ## Iblock2>50
-    Ib2 = acc[1,40:80].mean() >= 0.5
+    Ib2 = acc[1,80:120].mean() >= 0.55
     return Btest&Ib2
 
 
@@ -69,7 +69,7 @@ while True:
     }
     semargs = {
         'beta2':False,
-        'skipt1':np.random.choice([True,False]),
+        'skipt1':True,
         'ppd_allsch':False
     }
     taskargs = {
