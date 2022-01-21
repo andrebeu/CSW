@@ -47,7 +47,7 @@ def recordable(acc):
     ## Btest>85
     Btest = acc[0,-40:].mean() > 0.85
     ## Iblock2>50
-    Ib2 = acc[0,40:80].mean() > 0.5
+    Ib2 = acc[1,40:80].mean() >= 0.5
     return Btest&Ib2
 
 

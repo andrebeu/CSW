@@ -3,9 +3,9 @@ from glob import glob as glob
 import pandas as pd
 
 
-gsname = 'gs1120'
+gsname = 'gs1209'
 
-MAKE_DATADF = False
+MAKE_DATADF = True
 MAKE_SUMMDF = True
 INNER_SIZE = 250
 
