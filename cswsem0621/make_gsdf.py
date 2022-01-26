@@ -3,14 +3,14 @@ from glob import glob as glob
 import pandas as pd
 
 
-gsname = 'gs1209'
+gsname = 'gs0122'
 
 MAKE_DATADF = True
 MAKE_SUMMDF = True
-INNER_SIZE = 250
+INNER_SIZE = 1000
 
 if MAKE_DATADF:
-    for jdx in range(2):
+    for jdx in range(1):
         print('jdx',jdx)
         dfpathL = glob('data/%s/*'%gsname)
         datadfL = []
