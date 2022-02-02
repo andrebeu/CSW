@@ -2,15 +2,19 @@ import numpy as np
 from glob import glob as glob
 import pandas as pd
 
-
-gsname = 'gs0122'
-
+## import human data for fitting
+hdf = pd.read_csv('../human_data.csv')
+hB,hI = hdf.loc[:,('blocked mean','interleaved mean')].values.T
+    
+## set
+gsname = 'gs0125'
 MAKE_DATADF = True
 MAKE_SUMMDF = True
-INNER_SIZE = 1000
+INNER_SIZE = 250
+J_ = 2
 
 if MAKE_DATADF:
-    for jdx in range(1):
+    for jdx in range(1*J_):
         print('jdx',jdx)
         dfpathL = glob('data/%s/*'%gsname)
         datadfL = []
@@ -65,9 +69,16 @@ def make_exp_summ_df(exp_data_df):
             testacc = np.mean(df_c.acc[-40:])
             # acc1 = np.mean(df_c.acc[:40])
             acc2 = np.mean(df_c.acc[40:80])
+            # MSE
+            hdata = hdf.loc[:,('%s mean'%cond_i)].values.T
+            if len(df_c.acc)!=200: 
+                print('skip')
+                continue
+            MSE = np.mean((hdata-df_c.acc)**2)            
             ## populate dataD
             dataD['testacc-%s'%cond_i[0]] = testacc
             dataD['acc2-%s'%cond_i[0]] = acc2
+            dataD['mse-%s'%cond_i[0]] = MSE
         ##
         seed_summ_df_L.append(pd.DataFrame(index=[0],data=dataD))
     return pd.concat(seed_summ_df_L)
@@ -78,7 +89,7 @@ if MAKE_SUMMDF:
     print('make summary df')
     dfpathL = glob('data/%s/*'%gsname)
     mini_summdf_L = []
-    for idx in np.arange(INNER_SIZE,2001,INNER_SIZE):
+    for idx in np.arange(INNER_SIZE,1000*J_+1,INNER_SIZE):
         print(idx-INNER_SIZE,idx)
         ## inner
         exp_summ_df_L = []

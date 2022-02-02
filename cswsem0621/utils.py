@@ -52,14 +52,14 @@ def get_acc(data,acc_mode=FLAG_SMACC):
     single seed
     """
     if acc_mode: # compute softmax acc
-        ysm = get_sm(data['xth'])
-        # print(data['xth'],ysm)
+        yhat_sm = get_sm(data['xth'])
+        # print(data['xth'],yhat_sm)
         L = []
         # loop over layers
         for i in range(2):
-            ysml = ysm[i,:,:]
-            yt = data['exp'][:,i+3] 
-            pr_yt = ysml[range(len(ysml)),yt - (5+2*i)] # 
+            yhat_sm_l = yhat_sm[i,:,:] # softmax of layer (float)
+            yt = data['exp'][:,i+3] # target tonode (int)
+            pr_yt = yhat_sm_l[range(len(yhat_sm_l)),yt - (5+2*i)] # 
             L.append(pr_yt)
         return np.array(L)
     else: # compute score
