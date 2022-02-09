@@ -71,7 +71,7 @@ def get_acc(data,acc_mode=FLAG_SMACC):
         return score.T
 
 
-def unpack_acc(cbatch_data):
+def unpack_acc(cbatch_data,mean_over_tsteps=True):
     """ 
     given cbatch data (data from multiple curr and seeds)
     return acc [curr,seed,trial]
@@ -79,7 +79,10 @@ def unpack_acc(cbatch_data):
     accL = [] # curr
     for cidx in range(len(cbatch_data)):
         acc = np.array([get_acc(sbatch) for sbatch in cbatch_data[cidx]])
-        accL.append(acc.mean(1)) # mean over layers
+        if mean_over_tsteps:
+            accL.append(acc.mean(1)) # mean over layers
+        else:
+            accL.append(acc) # mean over layers
     return np.array(accL)
 
 def unpack_data(cbatch_data,dtype='priors'):

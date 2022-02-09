@@ -1,4 +1,4 @@
-gsname='gs0125'
+gsname='gs0202'
 echo "RSYNC GRIDSEARCH DATA FROM:"
 echo ${gsname}
 echo
