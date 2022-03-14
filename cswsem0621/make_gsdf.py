@@ -7,7 +7,7 @@ hdf = pd.read_csv('../human_data.csv')
 hB,hI = hdf.loc[:,('blocked mean','interleaved mean')].values.T
     
 ## set
-gsname = 'gs0202'
+gsname = 'gs0209'
 MAKE_DATADF = True
 MAKE_SUMMDF = True
 INNER_SIZE = 500
