@@ -11,7 +11,7 @@ gsname = 'gs0209'
 MAKE_DATADF = True
 MAKE_SUMMDF = True
 INNER_SIZE = 500
-J_ = 1
+J_ = 2
 
 if MAKE_DATADF:
     for jdx in range(1*J_):
@@ -29,9 +29,10 @@ if MAKE_DATADF:
                 except:
                     print('error',p)
                     continue
-            print('inner concating')
-            mini_datadf = pd.concat(dfL).drop(columns='Unnamed: 0',)
-            datadfL.append(mini_datadf)
+            print('inner concating. len=',len(dfL))
+            if len(dfL):
+                mini_datadf = pd.concat(dfL).drop(columns='Unnamed: 0',)
+                datadfL.append(mini_datadf)
         print('outer concating')
         datadf = pd.concat(datadfL)
         # datadf ## full data
@@ -105,10 +106,11 @@ if MAKE_SUMMDF:
             exp_summ_df = make_exp_summ_df(exp_data_df)
             exp_summ_df_L.append(exp_summ_df)
         ## 
-        print('inner concat. summ df from a collection of exps')
-        mini_summ_df = pd.concat(exp_summ_df_L)
-        print('should contain 4 large summ_dfs')
-        mini_summdf_L.append(mini_summ_df)
+        if len(exp_summ_df_L):
+            print('inner concat. summ df from a collection of exps')
+            mini_summ_df = pd.concat(exp_summ_df_L)
+            print('should contain 4 large summ_dfs')
+            mini_summdf_L.append(mini_summ_df)
     print('outer concat')
     gsdf = pd.concat(mini_summdf_L)
     gsdf.to_csv('data/%s-summdf.csv'%gsname)

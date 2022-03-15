@@ -33,9 +33,9 @@ def get_argsD(row):
     'n_test':40
   }
   semargs = {
-    'beta2':False,
-    'skipt1':True,
-    'ppd_allsch':False
+    'beta2':0,
+    'skipt1':1,
+    'ppd_allsch':0
   }
   ## get params from top MSE
   schargs = {

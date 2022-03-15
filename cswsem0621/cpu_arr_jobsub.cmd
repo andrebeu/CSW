@@ -22,7 +22,7 @@ conda activate sem
 # echo ${param_str}
 
 ## submit job
-srun python gs0209.py 
+srun python gs0315.py 
 
 echo "done.sh"
 
