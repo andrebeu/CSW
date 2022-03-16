@@ -7,7 +7,7 @@ hdf = pd.read_csv('../human_data.csv')
 hB,hI = hdf.loc[:,('blocked mean','interleaved mean')].values.T
     
 ## set
-gsname = 'gs0209'
+gsname = 'gs0315'
 MAKE_DATADF = True
 MAKE_SUMMDF = True
 INNER_SIZE = 500
@@ -34,11 +34,12 @@ if MAKE_DATADF:
                 mini_datadf = pd.concat(dfL).drop(columns='Unnamed: 0',)
                 datadfL.append(mini_datadf)
         print('outer concating')
-        datadf = pd.concat(datadfL)
-        # datadf ## full data
-        print('saving datadf')
-        datadf.to_csv('data/%s-datadf-%i.csv'%(gsname,jdx))
-        del datadf
+        if len(datadfL):
+            datadf = pd.concat(datadfL)
+            # datadf ## full data
+            print('saving datadf')
+            datadf.to_csv('data/%s-datadf-%i.csv'%(gsname,jdx))
+            del datadf
 else:
     ### 
     None
