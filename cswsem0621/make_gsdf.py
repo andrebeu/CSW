@@ -8,7 +8,7 @@ hB,hI = hdf.loc[:,('blocked mean','interleaved mean')].values.T
     
 ## set
 gsname = 'gs0315'
-MAKE_DATADF = True
+MAKE_DATADF = False
 MAKE_SUMMDF = True
 INNER_SIZE = 500
 J_ = 2
@@ -67,6 +67,7 @@ def make_exp_summ_df(exp_data_df):
         dataD = {**dict(zip(paramL,params_i))}
         # loop conditions (BIEML)
         for cond_i,df_c in seed_df.groupby('cond'):
+            print(cond_i,df_c)
             ## compute metrics
             testacc = np.mean(df_c.acc[-40:])
             # acc1 = np.mean(df_c.acc[:40])
@@ -81,6 +82,7 @@ def make_exp_summ_df(exp_data_df):
             dataD['testacc-%s'%cond_i[0]] = testacc
             dataD['acc2-%s'%cond_i[0]] = acc2
             dataD['mse-%s'%cond_i[0]] = MSE
+        assert False
         ##
         seed_summ_df_L.append(pd.DataFrame(index=[0],data=dataD))
     return pd.concat(seed_summ_df_L)
