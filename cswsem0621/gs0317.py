@@ -12,7 +12,7 @@ from datetime import datetime
 ## RANDOM GRIDSEARCHING
 # setting
 GSDIR = 'data/temp/'
-DEBUG = True
+DEBUG = False
 
 ## param ranges
 alpha_min = 0.001
