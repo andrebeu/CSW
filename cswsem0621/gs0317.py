@@ -10,13 +10,9 @@ from model import *
 from datetime import datetime
 
 ## RANDOM GRIDSEARCHING
-
-## timing
-startTime = datetime.now() 
-tstamp = time.perf_counter_ns() + np.random.randint(999)
-
-## saving dir
-GSDIR = 'data/gs0315/'
+# setting
+GSDIR = 'data/temp/'
+DEBUG = False
 
 ## param ranges
 alpha_min = 0.001
@@ -40,10 +36,16 @@ condL = ['blocked','interleaved',
         ]
 print('SETUP','ns=',num_seeds,condL)
 
+## timing
+startTime = datetime.now() 
+tstamp = time.perf_counter_ns() + np.random.randint(999)
+
 def recordable(acc):
     """ acc [nconds,trials] 
     conds: B,I,E,M,L
     """
+    if DEBUG:
+        return True
     ## Btest>85
     Btest = acc[0,-40:].mean() > 0.85
     ## Iblock2>50
@@ -87,9 +89,9 @@ while True:
     }
     # run
     exp_batch_data = run_batch_exp_curr(num_seeds,args,condL) # [curr,seeds,{data}]
-    batch_acc = unpack_acc(exp_batch_data) # curr,seeds,trials
+    batch_acc = unpack_acc(exp_batch_data,mean_over_tsteps=False) # curr,seeds,tsteps,trials
     mean_acc = batch_acc.mean(1) # mean over seeds
-    if recordable(mean_acc):
+    if recordable(mean_acc.mean(1)): # mean over tsteps
         ## record
         # build df 
         for ci in range(len(condL)):
@@ -98,7 +100,8 @@ while True:
                 **semargs,
                 'cond':condL[ci],
                 'trial':range(200),
-                'acc':mean_acc[ci]
+                'acc2':mean_acc[ci,0],
+                'acc3':mean_acc[ci,1]
             })
             dfL.append(cond_df)
         # update csv
