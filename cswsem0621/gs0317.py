@@ -11,7 +11,7 @@ from datetime import datetime
 
 ## RANDOM GRIDSEARCHING
 # setting
-GSDIR = 'data/temp/'
+GSDIR = 'data/gs0317/'
 DEBUG = False
 
 ## param ranges
