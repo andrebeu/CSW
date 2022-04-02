@@ -1,4 +1,4 @@
-# CSW modeling 21/22
+# CSW modeling 21-22
 
 ### finsihed last GS, 
 * todo: between seed analysis
