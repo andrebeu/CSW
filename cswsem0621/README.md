@@ -2,6 +2,9 @@
 
 ### finsihed last GS, 
 * todo: between seed analysis
+  * build analysis in single_model, then wrap top5
+    * question: at what state is interleaved model fate determined?
+    * interleaved analysis: 
 
 ### forked from cswtoy0521 (05/11/21)
 - delta learner
