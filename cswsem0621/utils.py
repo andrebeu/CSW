@@ -144,5 +144,10 @@ def run_batch_exp(ns,args):
 
 ## plotting
 
-
+def movavg(X,w=5):
+  Y = np.zeros(len(X)-w)
+  for xi in range(len(X)-w):
+    Y[xi] = X[xi:xi+w].mean()
+  return Y
+    
 

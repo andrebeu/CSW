@@ -5,6 +5,9 @@ import pandas as pd
 ## import human data for fitting
 hdf = pd.read_csv('../human_data.csv')
 hB,hI = hdf.loc[:,('blocked mean','interleaved mean')].values.T
+hdf_split = pd.read_csv('../human_data_split_tstep.csv')
+hB1,hB2,hI1,hI2 = hdf_split.loc[:,('blocked-step1','blocked-step2',
+    'interleaved-step1','interleaved-step2')].values.T
     
 ## set
 gsname = 'gs0317'
@@ -52,7 +55,7 @@ paramL = ['concentration', 'stickiness_wi', 'stickiness_bt',
    'skipt1']
 
 ## exp df
-def make_exp_summ_df(exp_data_df):
+def make_exp_summ_df(exp_data_df,split_acc_bool=True):
     """ 
     given data_df for a collection of params
         groups by params and cond to compute 
@@ -67,20 +70,32 @@ def make_exp_summ_df(exp_data_df):
         dataD = {**dict(zip(paramL,params_i))}
         # loop conditions (BIEML)
         for cond_i,df_c in seed_df.groupby('cond'):
-            ## compute metrics
-            testacc = np.mean(df_c.acc[-40:])
-            # acc1 = np.mean(df_c.acc[:40])
-            acc2 = np.mean(df_c.acc[40:80])
-            # MSE
-            hdata = hdf.loc[:,('%s mean'%cond_i)].values.T
-            if len(df_c.acc)!=200: 
+            # print
+            if len(df_c.trial)!=200: 
                 print('skip')
                 continue
-            MSE = np.mean((hdata-df_c.acc)**2)            
-            ## populate dataD
-            dataD['testacc-%s'%cond_i[0]] = testacc
-            dataD['acc2-%s'%cond_i[0]] = acc2
-            dataD['mse-%s'%cond_i[0]] = MSE
+            # MSE
+            if split_acc_bool:
+                df_c.loc[:,"acc"] = (df_c.acc2+df_c.acc3)/2
+                if (cond_i == "blocked") or (cond_i == "interleaved"):
+                    hacc_step1 = hdf_split.loc[:,("%s-step1"%cond_i)].values.T
+                    hacc_step2 = hdf_split.loc[:,("%s-step2"%cond_i)].values.T
+                    mse1 = np.mean((hacc_step1-df_c.acc2)**2)
+                    mse2 = np.mean((hacc_step2-df_c.acc3)**2)
+                    dataD['%s_mse1'%cond_i[0]] = mse1
+                    dataD['%s_mse2'%cond_i[0]] = mse2
+                # dataD['acc-%s'%cond_i[0]] = df_c.acc
+            else:
+                ## compute metrics
+                testacc = np.mean(df_c.acc[-40:])
+                acc2 = np.mean(df_c.acc[40:80])
+                hdata = hdf.loc[:,('%s mean'%cond_i)].values.T
+                MSE = np.mean((hdata-df_c.acc)**2)            
+                ## populate dataD
+                dataD['mse-%s'%cond_i[0]] = MSE
+                dataD['acc2-%s'%cond_i[0]] = acc2
+                dataD['testacc-%s'%cond_i[0]] = testacc
+        # assert False
         ##
         seed_summ_df_L.append(pd.DataFrame(index=[0],data=dataD))
     return pd.concat(seed_summ_df_L)
