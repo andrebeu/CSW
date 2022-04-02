@@ -1,3 +1,5 @@
+### finsihed last GS, 
+* todo: between seed analysis
 
 ### forked from cswtoy0521 (05/11/21)
 - delta learner
