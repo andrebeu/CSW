@@ -4,3 +4,7 @@
 ### forked from cswtoy0521 (05/11/21)
 - delta learner
 - schema inference using MAP on CRP+dirichlet 
+
+
+# resources
+- [slides](https://docs.google.com/presentation/d/1aVdErjdES8mQNXgrDJmuqAjO4DHW6ikSMR6MfmQsnf0/edit#slide=id.g1209988c413_0_0)
