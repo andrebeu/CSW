@@ -134,6 +134,8 @@ def run_batch_exp(ns,args):
     task = Task()
     sem = SEM(schargs=args['sch'],**args['sem'])
     exp,curr  = task.generate_experiment(**args['exp'])
+    print(exp)
+    print(curr)
     data = sem.run_exp(exp)
     data['exp']=exp
     dataL.append(data)
