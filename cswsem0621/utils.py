@@ -110,21 +110,16 @@ def run_batch_exp_curr(ns,args,currL=['blocked','interleaved']):
     data[curr][seed] = 
         dict_keys(['zt', 'xth', 'prior', 'like', 'post', 'exp'])
   """
-  accL = []
   dataL = []
   # dataD = {}
   for curr in currL:
     args['exp']['condition'] = curr
     ## extract other data here
-    data_batch = run_batch_exp(ns,args)
+    data_batch = run_batch_exp(ns,args,exp)
     dataL.append(data_batch)
-    # dataD[curr] = dataL
-    ## unpack seeds and take mean over layers
-    acc = np.array([get_acc(data) for data in data_batch]).mean(1) # mean over layer
-    accL.append(acc)
   return dataL
   
-def run_batch_exp(ns,args):
+def run_batch_exp(ns,args,exp):
   """ exp over seeds, 
   single task_condition / param config
   return full data
