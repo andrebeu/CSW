@@ -110,16 +110,21 @@ def run_batch_exp_curr(ns,args,currL=['blocked','interleaved']):
     data[curr][seed] = 
         dict_keys(['zt', 'xth', 'prior', 'like', 'post', 'exp'])
   """
+  accL = []
   dataL = []
   # dataD = {}
-  for curr in currL:
-    args['exp']['condition'] = curr
+  for currName in currL:
+    args['exp']['condition'] = currName
     ## extract other data here
-    data_batch = run_batch_exp(ns,args,exp)
+    data_batch = run_batch_exp(ns,args)
     dataL.append(data_batch)
+    # dataD[curr] = dataL
+    ## unpack seeds and take mean over layers
+    acc = np.array([get_acc(data) for data in data_batch]).mean(1) # mean over layer
+    accL.append(acc)
   return dataL
   
-def run_batch_exp(ns,args,exp):
+def run_batch_exp(ns,args,expArr=None):
   """ exp over seeds, 
   single task_condition / param config
   return full data
@@ -128,9 +133,10 @@ def run_batch_exp(ns,args,exp):
   for i in range(ns):
     task = Task()
     sem = SEM(schargs=args['sch'],**args['sem'])
-    exp,curr  = task.generate_experiment(**args['exp'])
-    print(exp)
-    print(curr)
+    if type(expArr) == type(None):
+        exp,_  = task.generate_experiment(**args['exp'])
+    else:
+        exp = expArr[i]
     data = sem.run_exp(exp)
     data['exp']=exp
     dataL.append(data)
@@ -148,3 +154,35 @@ def movavg(X,w=5):
   return Y
     
 
+## TOP MSE models
+schargs_mse0 ={
+  'concentration': 1.524765,
+  'stickiness_wi': 1.083961,
+  'stickiness_bt': 1.083961,
+  'sparsity': 0.152714
+}
+schargs_mse1 ={
+  'concentration': 1.500351,
+  'stickiness_wi': 1.375400,
+  'stickiness_bt': 1.375400,
+  'sparsity': 0.112368
+}
+schargs_mse2 ={
+  'concentration': 0.492800,
+  'stickiness_wi': 1.287879,
+  'stickiness_bt': 1.287879,
+  'sparsity': 0.039337
+}
+schargs_mse3 ={
+  'concentration': 0.745254,
+  'stickiness_wi': 1.226039,
+  'stickiness_bt': 1.226039,
+  'sparsity': 0.005049
+}
+schargs_mse4 ={
+  'concentration': 2.070620,
+  'stickiness_wi': 1.277997,
+  'stickiness_bt': 1.277997,
+  'sparsity': 0.004873
+}
+SCHARGS_MSE = [schargs_mse0,schargs_mse1,schargs_mse2,schargs_mse3,schargs_mse4]
